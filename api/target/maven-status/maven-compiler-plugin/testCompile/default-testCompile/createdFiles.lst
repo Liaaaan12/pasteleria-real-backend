@@ -1,1 +1,2 @@
-com/pasteleria/api/PasteleriaApiApplicationTests.class
+com\pasteleria\api\PasteleriaApiApplicationTests.class
+com\pasteleria\api\controller\ProductoControllerTest.class

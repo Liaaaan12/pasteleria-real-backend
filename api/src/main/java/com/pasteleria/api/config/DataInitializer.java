@@ -1,18 +1,18 @@
 package com.pasteleria.api.config;
 
 import com.pasteleria.api.entity.Categoria;
-import com.pasteleria.api.entity.Direccion;
 import com.pasteleria.api.entity.Producto;
 import com.pasteleria.api.entity.Usuario;
 import com.pasteleria.api.repository.CategoriaRepository;
+import com.pasteleria.api.repository.ProductoRepository;
 import com.pasteleria.api.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -20,128 +20,108 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
+    private final ProductoRepository productoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        // Crear usuarios de prueba
-        //createUsuarios();
-        // Crear categorías y productos
-        //createCategoriasYProductos();
-    }
-
-    private void createUsuarios() {
-        // SuperAdmin
-        Usuario superAdmin = Usuario.builder()
-                .run("11111111-1")
-                .nombre("Ana María")
-                .apellidos("Pérez Soto")
-                .correo("ana.maria@gmail.cl")
-                .fechaNacimiento(LocalDate.of(1990, 5, 12))
-                .tipoUsuario(Usuario.TipoUsuario.SUPERADMIN)
-                .password("61be55a8e2f6b4e172338bddf184d6dbee29c98853e0a0485ecee7f27b9af0b4")
-                .build();
-        
-        Direccion dir1 = Direccion.builder()
-                .address("Av. Libertador 123")
-                .region("Metropolitana")
-                .comuna("Santiago")
-                .usuario(superAdmin)
-                .build();
-        
-        superAdmin.setDirecciones(Set.of(dir1));
-        usuarioRepository.save(superAdmin);
-
-        // Administrador
-        Usuario admin = Usuario.builder()
-                .run("12345678-9")
-                .nombre("Luis Felipe")
-                .apellidos("González Fuentes")
-                .correo("luis.felipe@gmail.com")
-                .fechaNacimiento(LocalDate.of(1985, 11, 20))
-                .tipoUsuario(Usuario.TipoUsuario.ADMINISTRADOR)
-                .password("61be55a8e2f6b4e172338bddf184d6dbee29c98853e0a0485ecee7f27b9af0b4")
-                .build();
-        
-        Direccion dir2 = Direccion.builder()
-                .address("Calle 5 Norte 456")
-                .region("Valparaíso")
-                .comuna("Viña del Mar")
-                .usuario(admin)
-                .build();
-        
-        admin.setDirecciones(Set.of(dir2));
-        usuarioRepository.save(admin);
-
-        // Cliente
-        Usuario cliente = Usuario.builder()
-                .run("16789032-2")
-                .nombre("Claudia Isabel")
-                .apellidos("Fernández Mella")
-                .correo("claudia.isabel@duoc.cl")
-                .fechaNacimiento(LocalDate.of(1992, 10, 26))
-                .tipoUsuario(Usuario.TipoUsuario.CLIENTE)
-                .password("61be55a8e2f6b4e172338bddf184d6dbee29c98853e0a0485ecee7f27b9af0b4")
-                .build();
-        
-        Direccion dir3 = Direccion.builder()
-                .address("Av. San Miguel 876")
-                .region("Maule")
-                .comuna("Talca")
-                .usuario(cliente)
-                .build();
-        
-        cliente.setDirecciones(Set.of(dir3));
-        usuarioRepository.save(cliente);
+        if (categoriaRepository.count() == 0) {
+            createCategoriasYProductos();
+        }
+        if (usuarioRepository.count() == 0) {
+            createUsuarios();
+        }
+        System.out.println(">>> Sistema iniciado con base de datos MySQL y datos de ejemplo.");
     }
 
     private void createCategoriasYProductos() {
-        // Categoría: Tortas Cuadradas
-        Categoria tortasCuadradas = Categoria.builder()
-                .nombreCategoria("Tortas Cuadradas")
+        // Crear categorías
+        Categoria pasteles = Categoria.builder()
+                .nombreCategoria("Pasteles")
                 .build();
-        
-        Producto tc001 = Producto.builder()
-                .codigoProducto("TC001")
-                .nombreProducto("Torta Cuadrada de Chocolate")
-                .precioProducto(new BigDecimal("45000"))
-                .descripcionProducto("Deliciosa torta de chocolate con varias capas de esponjoso bizcocho")
-                .imagenProducto("/images/products/tortas/tradicional/torta-cuadrada-chocolate.png")
-                .stock(10)
-                .stockCritico(3)
-                .categoria(tortasCuadradas)
-                .build();
-        
-        Producto tc002 = Producto.builder()
-                .codigoProducto("TC002")
-                .nombreProducto("Torta Cuadrada de Frutas")
-                .precioProducto(new BigDecimal("50000"))
-                .descripcionProducto("Una mezcla exquisita de frutas frescas de temporada")
-                .imagenProducto("/images/products/tortas/tradicional/torta-cuadrada-frutas.jpg")
-                .stock(10)
-                .stockCritico(3)
-                .categoria(tortasCuadradas)
-                .build();
-        
-        tortasCuadradas.setProductos(Set.of(tc001, tc002));
-        categoriaRepository.save(tortasCuadradas);
+        categoriaRepository.save(pasteles);
 
-        // Categoría: Postres Individuales
-        Categoria postresIndividuales = Categoria.builder()
-                .nombreCategoria("Postres Individuales")
+        Categoria galletas = Categoria.builder()
+                .nombreCategoria("Galletas")
                 .build();
-        
-        Producto pi001 = Producto.builder()
-                .codigoProducto("PI001")
-                .nombreProducto("Mousse de Chocolate")
-                .precioProducto(new BigDecimal("5000"))
-                .descripcionProducto("Postre cremoso y suave, elaborado con chocolate de alta calidad")
-                .imagenProducto("/images/products/postres-individuales/mousse-chocolate.png")
+        categoriaRepository.save(galletas);
+
+        Categoria postres = Categoria.builder()
+                .nombreCategoria("Postres")
+                .build();
+        categoriaRepository.save(postres);
+
+        // Crear productos
+        Producto producto1 = Producto.builder()
+                .codigoProducto("PROD001")
+                .nombreProducto("Pastel de Chocolate")
+                .descripcionProducto("Delicioso pastel de chocolate con relleno de crema")
+                .precioProducto(new BigDecimal("45.00"))
                 .stock(10)
-                .stockCritico(3)
-                .categoria(postresIndividuales)
+                .stockCritico(2)
+                .categoria(pasteles)
                 .build();
-        
-        postresIndividuales.setProductos(Set.of(pi001));
-        categoriaRepository.save(postresIndividuales);
+        productoRepository.save(producto1);
+
+        Producto producto2 = Producto.builder()
+                .codigoProducto("PROD002")
+                .nombreProducto("Pastel de Vainilla")
+                .descripcionProducto("Pastel clásico de vainilla")
+                .precioProducto(new BigDecimal("40.00"))
+                .stock(15)
+                .stockCritico(2)
+                .categoria(pasteles)
+                .build();
+        productoRepository.save(producto2);
+
+        Producto producto3 = Producto.builder()
+                .codigoProducto("PROD003")
+                .nombreProducto("Galletas de Avena")
+                .descripcionProducto("Galletas saludables de avena")
+                .precioProducto(new BigDecimal("15.00"))
+                .stock(50)
+                .stockCritico(5)
+                .categoria(galletas)
+                .build();
+        productoRepository.save(producto3);
+
+        Producto producto4 = Producto.builder()
+                .codigoProducto("PROD004")
+                .nombreProducto("Brownie")
+                .descripcionProducto("Brownie casero de chocolate")
+                .precioProducto(new BigDecimal("25.00"))
+                .stock(20)
+                .stockCritico(3)
+                .categoria(postres)
+                .build();
+        productoRepository.save(producto4);
+
+        System.out.println("✓ Categorías y Productos creados exitosamente");
+    }
+
+    private void createUsuarios() {
+        Usuario admin = Usuario.builder()
+                .run("12345678-9")
+                .nombre("Admin")
+                .apellidos("Pastelería")
+                .correo("admin@pasteleria.com")
+                .password(passwordEncoder.encode("Admin123!"))
+                .fechaNacimiento(LocalDate.of(1990, 1, 1))
+                .tipoUsuario(Usuario.TipoUsuario.SUPERADMIN)
+                .build();
+        usuarioRepository.save(admin);
+
+        Usuario vendedor = Usuario.builder()
+                .run("98765432-1")
+                .nombre("Vendedor")
+                .apellidos("Pastelería")
+                .correo("vendedor@pasteleria.com")
+                .password(passwordEncoder.encode("Vendedor123!"))
+                .fechaNacimiento(LocalDate.of(1995, 5, 15))
+                .tipoUsuario(Usuario.TipoUsuario.VENDEDOR)
+                .build();
+        usuarioRepository.save(vendedor);
+
+        System.out.println("✓ Usuarios creados exitosamente");
     }
 }
