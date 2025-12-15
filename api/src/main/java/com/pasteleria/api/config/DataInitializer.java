@@ -24,9 +24,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // Crear usuarios de prueba
-        createUsuarios();
+        //createUsuarios();
         // Crear categorías y productos
-        createCategoriasYProductos();
+        //createCategoriasYProductos();
     }
 
     private void createUsuarios() {
